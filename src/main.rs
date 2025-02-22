@@ -40,7 +40,12 @@ async fn load_env() {
 }
 
 fn create_cors_layer() -> CorsLayer {
-    let origin_regex = Regex::new(r"(https?://)?(192)\.(168)\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9]){2}(?::\d+)?|localhost(?::\d+)?|127.0.0.1(?::\d+)?").unwrap();
+    let origin_regex = if cfg!(debug_assertions) {
+        Regex::new(r"(https?://)?(192)\.(168)\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9]){2}(?::\d+)?|localhost(?::\d+)?|127.0.0.1(?::\d+)?").unwrap()
+    } else {
+        Regex::new(r"^paste\.051205\.xyz$").unwrap()
+    };
+
     CorsLayer::new()
         .allow_origin(AllowOrigin::async_predicate(move |origin: HeaderValue, _request_parts: &Parts| async move {
             let matches = origin_regex.is_match(origin.to_str().unwrap());

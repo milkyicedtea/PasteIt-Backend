@@ -88,6 +88,7 @@ async fn create_paste(
 
     Ok(Json(PasteResponse { short_id }))
 }
+
 async fn get_paste(
     State(state): State<AppState>,
     Path(short_id): Path<String>,
