@@ -3,6 +3,10 @@ name = "backend"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "PasteIt-Backend"
+path = "src/main.rs"
+
 [dependencies]
 aes-gcm = { version = "0.10.3" }
 axum = { version = "0.8.1", features = ["default", "tokio", "multipart", "json"]}

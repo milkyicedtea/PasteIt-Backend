@@ -23,7 +23,7 @@ async fn load_env() {
     if Path::new(secret_path).exists() {
         println!("🔒 Loading environment variables from Docker secrets...");
 
-        let secrets = ["HOST", "DB_URL", "PASTE_ENCRYPTION_KEY", "RECAPTCHA_SECRET_KEY"];
+        let secrets = ["DB_URL", "PASTE_ENCRYPTION_KEY", "RECAPTCHA_SECRET_KEY"];
 
         for secret in secrets.iter() {
             let secret_path = Path::new(secret_path).join(secret);
@@ -71,7 +71,7 @@ async fn main() {
         .layer(create_cors_layer())
         .with_state(state);
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
     println!("Listening on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
