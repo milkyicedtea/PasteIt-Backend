@@ -1,0 +1,21 @@
+-- Remember to create a user and assign to a new schema for better security
+
+begin;
+
+create table pastes (
+    id bigserial primary key,
+    paste text not null check(octet_length(paste) <= 1048576),
+    created_at timestamptz default now(),
+    name varchar(128) default 'New PasteIt',
+    langauge varchar(32) default 'plaintext'
+);
+
+create index idx_pastes_create_at on pastes (created_at);
+
+create table paste_rate_limits (
+    encrypted_id varchar(64) primary key not null, -- technically not encrypted, just hashed but eh..
+    paste_count integer not null default 1,
+    last_reset timestamp with time zone not null default current_timestamp
+);
+
+create index idx_paste_rate_limits_last_reset on paste_rate_limits (last_reset);
