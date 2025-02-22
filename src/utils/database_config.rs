@@ -8,8 +8,14 @@ pub async fn get_db_pool() -> Pool {
 
     let database_url = env::var("DB_URL").expect("DB_URL must be set");
     let mut cfg = Config::new();
+    cfg.url = Some(database_url);
+    cfg.manager = Some(ManagerConfig {
+        recycling_method: RecyclingMethod::Fast,
+    });
 
     if Path::new("/root/.postgresql/root.crt").exists() {
+        println!("Using database root crt");
+
         use postgres_native_tls::MakeTlsConnector;
         use native_tls::Certificate;
 
@@ -26,10 +32,7 @@ pub async fn get_db_pool() -> Pool {
 
     }
 
-    cfg.url = Some(database_url);
-    cfg.manager = Some(ManagerConfig {
-        recycling_method: RecyclingMethod::Fast,
-    });
+    println!("Not using database root crt");
 
     cfg.create_pool(Some(Runtime::Tokio1), NoTls).unwrap()
 }
