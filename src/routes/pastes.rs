@@ -32,7 +32,7 @@ struct PasteResponse {
 struct PasteContentResponse {
     name: Option<String>,
     paste: String,
-    language: String,
+    language: Option<String>,
     created_at: DateTime<Utc>
 }
 

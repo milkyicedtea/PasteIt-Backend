@@ -1,6 +1,7 @@
 use std::{env, fs};
 use std::net::SocketAddr;
 use std::path::Path;
+use axum::routing::get;
 use axum::http::{HeaderName, HeaderValue, Method};
 use axum::http::request::Parts;
 use axum::{Router};
@@ -43,7 +44,7 @@ fn create_cors_layer() -> CorsLayer {
     let origin_regex = if cfg!(debug_assertions) {
         Regex::new(r"(https?://)?(192)\.(168)\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9]){2}(?::\d+)?|localhost(?::\d+)?|127.0.0.1(?::\d+)?").unwrap()
     } else {
-        Regex::new(r"^paste\.051205\.xyz$").unwrap()
+        Regex::new(r"^(?:https?://(?:.*\.)?051205\.xyz(?::\d+)?|https?://[\w.-]+:\d+)$").unwrap()
     };
 
     CorsLayer::new()
@@ -72,6 +73,9 @@ async fn main() {
         .nest("/api",
         Router::new()
             .nest("/pastes", pastes_router())
+            .route("/test", get(|| async {
+                "Hello World!"
+            }))
         )
         .layer(create_cors_layer())
         .with_state(state);

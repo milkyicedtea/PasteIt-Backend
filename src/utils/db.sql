@@ -1,4 +1,5 @@
 -- Remember to create a user and assign to a new schema for better security
+-- I hate cockroachdb and i'm going to migrate back to psql..
 
 begin;
 
