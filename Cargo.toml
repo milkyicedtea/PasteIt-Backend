@@ -15,9 +15,11 @@ chrono = { version = "0.4.39", features = ["serde"]}
 deadpool-postgres = { version = "0.14.1" }
 dotenvy = { version = "0.15.7" }
 hex = { version = "0.4.3" }
+native-tls = { version = "0.2.14" }
 tokio = { version = "1.43.0", features = ["full"]}
-tokio-postgres = { version = "0.7.13", features = ["with-chrono-0_4"]}
+tokio-postgres = { version = "0.7.13", features = ["with-chrono-0_4"] }
 tower-http = { version = "0.6.2", features = ["cors", "tokio", ] }
+postgres-native-tls = { version = "0.5.1" }
 reqwest = { version = "0.12.12", features = ["json"] }
 regex = "1.11.1"
 serde = { version = "1.0.217", features = ["derive"] }
