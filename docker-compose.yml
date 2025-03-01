@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  pasteit:
+    image: pasteit-backend
+    deploy:
+      replicas: 1
+    secrets:
+      - DB_URL
+      - PASTE_ENCRYPTION_KEY
+      - RECAPTCHA_SECRET_KEY
+    ports:
+      - "8080:8080"
+
+secrets:
+  DB_URL:
+    external: true
+  PASTE_ENCRYPTION_KEY:
+    external: true
+  RECAPTCHA_SECRET_KEY:
+    external: true

@@ -8,17 +8,19 @@ use axum::{Router};
 use deadpool_postgres::Pool;
 use regex::Regex;
 use tower_http::cors::{AllowOrigin, CorsLayer};
+use utoipa::OpenApi;
+use utoipa_swagger_ui::{Config, SwaggerUi};
 use crate::routes::pastes::pastes_router;
 use crate::utils::database_config::get_db_pool;
+use crate::utils::swagger::ApiDoc;
 
 mod utils;
 mod routes;
 
 #[derive(Clone)]
-pub struct AppState {
-    pub pool: Pool
+pub(crate) struct AppState {
+    pub(crate) pool: Pool
 }
-
 async fn load_env() {
     let secret_path = "/run/secrets/";
     if Path::new(secret_path).exists() {
@@ -76,6 +78,15 @@ async fn main() {
             .route("/test", get(|| async {
                 "Hello World!"
             }))
+        )
+        .merge(SwaggerUi::new("/api/docs")
+            .url("/api/docs/openapi.json", ApiDoc::openapi())
+            .config(Config::default()
+                .use_base_layout()
+                .try_it_out_enabled(false)
+                .doc_expansion("list")
+                .with_syntax_highlight(true)
+            )
         )
         .layer(create_cors_layer())
         .with_state(state);

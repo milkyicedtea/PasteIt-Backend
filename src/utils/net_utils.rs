@@ -3,7 +3,7 @@ use axum::http::{HeaderMap, StatusCode};
 use deadpool_postgres::Pool;
 use sha2::{Sha256, Digest};
 
-pub async fn get_real_ip(headers: &HeaderMap, connect_info: &SocketAddr) -> IpAddr {
+pub(crate) async fn get_real_ip(headers: &HeaderMap, connect_info: &SocketAddr) -> IpAddr {
     if let Some(fowarded_for) = headers.get("x-forwarded-for") {
         if let Ok(ip_str) = fowarded_for.to_str() {
             if let Ok(ip) = ip_str.split(',').next().unwrap_or("").trim().parse::<IpAddr>() {
@@ -23,7 +23,7 @@ pub async fn get_real_ip(headers: &HeaderMap, connect_info: &SocketAddr) -> IpAd
     connect_info.ip()
 }
 
-pub async fn check_rate_limit(pool: &Pool, ip: IpAddr, ) -> Result<(), (StatusCode, String)> {
+pub(crate) async fn check_rate_limit(pool: &Pool, ip: IpAddr, ) -> Result<(), (StatusCode, String)> {
     let db = pool.get().await.unwrap();
 
     let hashed_ip = hash_ip(&ip).await;

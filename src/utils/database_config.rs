@@ -3,7 +3,7 @@ use std::env;
 use std::path::Path;
 use tokio::fs;
 
-pub async fn get_db_pool() -> Pool {
+pub(crate) async fn get_db_pool() -> Pool {
     dotenvy::dotenv().ok();
 
     let database_url = env::var("DB_URL").expect("DB_URL must be set");

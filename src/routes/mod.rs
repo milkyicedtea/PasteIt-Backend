@@ -1,1 +1,1 @@
-pub mod pastes;
+pub(crate) mod pastes;

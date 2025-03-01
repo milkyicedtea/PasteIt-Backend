@@ -2,7 +2,7 @@ use aes_gcm::{Aes256Gcm, Key, KeyInit, Nonce};
 use aes_gcm::aead::{Aead, OsRng, rand_core::RngCore};
 use axum::http::StatusCode;
 
-pub async fn encrypt_paste(plain_text: &str, key: &Key<Aes256Gcm>) -> Result<String, (StatusCode, String)> {
+pub(crate) async fn encrypt_paste(plain_text: &str, key: &Key<Aes256Gcm>) -> Result<String, (StatusCode, String)> {
     let cipher = Aes256Gcm::new(key);
 
     // generate random 12-byte nonce
@@ -22,7 +22,7 @@ pub async fn encrypt_paste(plain_text: &str, key: &Key<Aes256Gcm>) -> Result<Str
     Ok(hex::encode(combined))   // hex encoded for storage
 }
 
-pub async fn decrypt_paste(encrypted_text: &str, key: &Key<Aes256Gcm>) -> Result<String, (StatusCode, String)> {
+pub(crate) async fn decrypt_paste(encrypted_text: &str, key: &Key<Aes256Gcm>) -> Result<String, (StatusCode, String)> {
     let cipher = Aes256Gcm::new(key);
 
     let data = hex::decode(encrypted_text).map_err(|e| (StatusCode::BAD_REQUEST, "Invalid hex encoding".to_owned() + &*e.to_string()))?;
@@ -37,7 +37,7 @@ pub async fn decrypt_paste(encrypted_text: &str, key: &Key<Aes256Gcm>) -> Result
     Ok(String::from_utf8(plaintext).unwrap())
 }
 
-pub async fn get_key_bytes() -> Result<Vec<u8>, (StatusCode, String)> {
+pub(crate) async fn get_key_bytes() -> Result<Vec<u8>, (StatusCode, String)> {
     hex::decode(std::env::var("PASTE_ENCRYPTION_KEY").map_err(|_| {
         (StatusCode::INTERNAL_SERVER_ERROR, "Encryption key not set".to_string())
     })?).map_err(|_| {

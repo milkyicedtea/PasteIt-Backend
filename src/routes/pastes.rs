@@ -8,41 +8,52 @@ use chrono::{DateTime, Utc};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use utoipa::ToSchema;
 use crate::AppState;
 use crate::utils::cryptography::{decrypt_paste, encrypt_paste, get_key_bytes};
 use crate::utils::net_utils::{check_rate_limit, get_real_ip};
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, ToSchema)]
 #[serde(rename_all = "camelCase")]
-struct Paste {
+pub(crate) struct Paste {
     name: Option<String>,
     paste: String,
     language: String,
     recaptcha_token: String
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, ToSchema)]
 #[serde(rename_all = "camelCase")]
-struct PasteResponse {
+pub(crate) struct PasteResponse {
     short_id: String    // Base62-encoded ID
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, ToSchema)]
 #[serde(rename_all = "camelCase")]
-struct PasteContentResponse {
+pub(crate) struct PasteContentResponse {
     name: Option<String>,
     paste: String,
     language: Option<String>,
     created_at: DateTime<Utc>
 }
 
-pub fn pastes_router() -> Router<AppState> {
+pub(crate) fn pastes_router() -> Router<AppState> {
     Router::new()
         .route("/paste", post(create_paste))
         .route("/paste/{short_id}", get(get_paste))
 }
 
-async fn create_paste(
+#[utoipa::path(
+    post,
+    path = "/api/pastes/paste",
+    responses(
+        (status = 200, description = "Paste created successfully", body = PasteResponse),
+        (status = 403, description = "reCAPTCHA verification failed"),
+        (status = 500, description = "Server error")
+    ),
+    tag = "pastes"
+)]
+pub(crate) async fn create_paste(
     State(state): State<AppState>,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     headers: HeaderMap,
@@ -89,7 +100,17 @@ async fn create_paste(
     Ok(Json(PasteResponse { short_id }))
 }
 
-async fn get_paste(
+#[utoipa::path(
+    get,
+    path = "/api/pastes/paste/{short_id}",
+    responses(
+        (status = 200, description = "Paste retrieved successfully", body = PasteContentResponse),
+        (status = 400, description = "Invalid short ID"),
+        (status = 500, description = "Server error")
+    ),
+    tag = "pastes"
+)]
+pub(crate) async fn get_paste(
     State(state): State<AppState>,
     Path(short_id): Path<String>,
 ) -> Result<Json<PasteContentResponse>, (StatusCode, String)> {
