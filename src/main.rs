@@ -1,73 +1,25 @@
-use std::{env, fs};
 use std::net::SocketAddr;
-use std::path::Path;
-use axum::routing::get;
-use axum::http::{HeaderName, HeaderValue, Method};
-use axum::http::request::Parts;
 use axum::{Router};
-use deadpool_postgres::Pool;
-use regex::Regex;
-use tower_http::cors::{AllowOrigin, CorsLayer};
+use axum::routing::get;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::{Config, SwaggerUi};
 use crate::routes::pastes::pastes_router;
+use crate::utils::appstate::AppState;
+use crate::utils::cors::create_cors_layer;
 use crate::utils::database_config::get_db_pool;
+use crate::utils::env::load_env;
 use crate::utils::swagger::ApiDoc;
 
 mod utils;
 mod routes;
 
-#[derive(Clone)]
-pub(crate) struct AppState {
-    pub(crate) pool: Pool
-}
-async fn load_env() {
-    let secret_path = "/run/secrets/";
-    if Path::new(secret_path).exists() {
-        println!("🔒 Loading environment variables from Docker secrets...");
 
-        let secrets = ["DB_URL", "PASTE_ENCRYPTION_KEY", "RECAPTCHA_SECRET_KEY"];
-
-        for secret in secrets.iter() {
-            let secret_path = Path::new(secret_path).join(secret);
-            if secret_path.exists() {
-                if let Ok(value) = fs::read_to_string(&secret_path) {
-                    env::set_var(secret.to_uppercase(), value.trim());
-                }
-            }
-        }
-    } else {
-        println!("🛠️  Loading environment variables from .env...");
-        dotenvy::dotenv().ok();
-    }
-}
-
-fn create_cors_layer() -> CorsLayer {
-    let origin_regex = if cfg!(debug_assertions) {
-        Regex::new(r"(https?://)?(192)\.(168)\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9]){2}(?::\d+)?|localhost(?::\d+)?|127.0.0.1(?::\d+)?").unwrap()
-    } else {
-        Regex::new(r"^(?:https?://(?:.*\.)?051205\.xyz(?::\d+)?|https?://[\w.-]+:\d+)$").unwrap()
-    };
-
-    CorsLayer::new()
-        .allow_origin(AllowOrigin::async_predicate(move |origin: HeaderValue, _request_parts: &Parts| async move {
-            let matches = origin_regex.is_match(origin.to_str().unwrap());
-            println!("Origin: {:?}, Matches: {}", origin, matches);
-            matches
-        }))
-        .allow_credentials(true)
-        .allow_methods(vec![Method::GET, Method::POST, Method::PUT, Method::DELETE])
-        .allow_headers(vec![
-            "content-type",
-            "origin"
-        ].into_iter().map(|s| s.parse::<HeaderName>().unwrap()).collect::<Vec<_>>())
-}
 
 #[tokio::main]
 async fn main() {
     load_env().await;
 
-    let pool = get_db_pool().await;
+    let pool = get_db_pool("DB_URL").await;
 
     let state = AppState { pool };
 

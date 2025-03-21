@@ -1,6 +1,6 @@
 use std::net::{IpAddr, SocketAddr};
 use axum::http::{HeaderMap, StatusCode};
-use deadpool_postgres::Pool;
+use deadpool_postgres::Pool as PgPool;
 use sha2::{Sha256, Digest};
 
 pub(crate) async fn get_real_ip(headers: &HeaderMap, connect_info: &SocketAddr) -> IpAddr {
@@ -23,7 +23,7 @@ pub(crate) async fn get_real_ip(headers: &HeaderMap, connect_info: &SocketAddr) 
     connect_info.ip()
 }
 
-pub(crate) async fn check_rate_limit(pool: &Pool, ip: IpAddr, ) -> Result<(), (StatusCode, String)> {
+pub(crate) async fn check_rate_limit(pool: &PgPool, ip: IpAddr, ) -> Result<(), (StatusCode, String)> {
     let db = pool.get().await.unwrap();
 
     let hashed_ip = hash_ip(&ip).await;

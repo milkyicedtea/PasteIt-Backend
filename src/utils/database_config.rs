@@ -1,12 +1,10 @@
-use deadpool_postgres::{Config, ManagerConfig, Pool, RecyclingMethod, Runtime, SslMode, tokio_postgres::NoTls};
+use deadpool_postgres::{Config, ManagerConfig, Pool as PgPool, RecyclingMethod, Runtime, SslMode, tokio_postgres::NoTls};
 use std::env;
 use std::path::Path;
 use tokio::fs;
 
-pub(crate) async fn get_db_pool() -> Pool {
-    dotenvy::dotenv().ok();
-
-    let database_url = env::var("DB_URL").expect("DB_URL must be set");
+pub(crate) async fn get_db_pool(key: &str) -> PgPool {
+    let database_url = env::var(key).expect(&format!("Key {key} must be set"));
     let mut cfg = Config::new();
     cfg.url = Some(database_url);
     cfg.manager = Some(ManagerConfig {
@@ -32,7 +30,7 @@ pub(crate) async fn get_db_pool() -> Pool {
 
     }
 
-    println!("Not using database root crt");
+    println!("Not using database root crt for key: {key}");
 
     cfg.create_pool(Some(Runtime::Tokio1), NoTls).unwrap()
 }
