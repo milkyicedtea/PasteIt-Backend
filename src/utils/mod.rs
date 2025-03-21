@@ -5,4 +5,4 @@ pub(crate) mod swagger;
 pub(crate) mod appstate;
 pub(crate) mod env;
 pub(crate) mod cors;
-mod auth;
+// mod auth;
