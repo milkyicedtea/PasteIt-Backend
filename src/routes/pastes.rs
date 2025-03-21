@@ -114,7 +114,7 @@ pub(crate) async fn get_paste(
     State(state): State<AppState>,
     Path(short_id): Path<String>,
 ) -> Result<Json<PasteContentResponse>, (StatusCode, String)> {
-    println!("Get paste called!");
+    // println!("Get paste called!");
     println!("Get paste: {:?}", short_id);
 
     let big_uint = bs62::decode_num(&short_id).map_err(|e| {
@@ -158,6 +158,8 @@ async fn verify_recaptcha(token: &str) -> Result<bool, (StatusCode, String)> {
     let recaptcha_secret = std::env::var("RECAPTCHA_SECRET_KEY").map_err(|_| {
         (StatusCode::INTERNAL_SERVER_ERROR, "reCAPTCHA secret key not set".to_string())
     })?;
+
+    // println!("Recaptcha Secret: {recaptcha_secret}");
 
     let params = [
         ("secret", recaptcha_secret),

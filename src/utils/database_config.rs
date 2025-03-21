@@ -12,6 +12,7 @@ pub(crate) async fn get_db_pool() -> Pool {
     cfg.manager = Some(ManagerConfig {
         recycling_method: RecyclingMethod::Fast,
     });
+    cfg.ssl_mode = Some(SslMode::Require);
 
     if Path::new("/root/.postgresql/root.crt").exists() {
         println!("Using database root crt");
@@ -27,7 +28,6 @@ pub(crate) async fn get_db_pool() -> Pool {
             .build()
             .expect("Failed to create TLS connector");
         let connector = MakeTlsConnector::new(tls_builder);
-        cfg.ssl_mode = Some(SslMode::Require);
         return cfg.create_pool(Some(Runtime::Tokio1), connector).unwrap();
 
     }

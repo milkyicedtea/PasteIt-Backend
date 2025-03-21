@@ -1,12 +1,18 @@
 # Build
-FROM rust:latest as builder
+FROM lukemathwalker/cargo-chef:latest-rust-1 as chef
 WORKDIR /app
 
-# Copy dependencies
-COPY Cargo.toml Cargo.lock ./
-RUN cargo fetch
+FROM chef as planner
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
 
-# Copy project and build it
+FROM chef as builder
+COPY --from=planner /app/recipe.json recipe.json
+
+# Build dependencies
+RUN cargo chef cook --release --recipe-path recipe.json
+
+# Build application
 COPY . .
 RUN cargo build --release
 
